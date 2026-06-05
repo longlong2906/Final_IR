@@ -67,11 +67,16 @@ Start the Student Server first:
 uv run uvicorn app:app --app-dir src --reload
 ```
 
-In another terminal, register the Student Server URL with the Teacher Proxy.
-After registration succeeds, the script automatically starts the evaluation:
+In another terminal, register the Student Server URL with the Teacher Proxy:
 
 ```powershell
 uv run python scripts/register_competition.py
+```
+
+After registration succeeds, start the evaluation separately:
+
+```powershell
+uv run python scripts/evaluate_competition.py
 ```
 
 The registration client sends:
