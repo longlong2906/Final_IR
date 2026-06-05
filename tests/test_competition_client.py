@@ -44,6 +44,41 @@ def test_register_sends_expected_request(monkeypatch):
     }
 
 
+def test_register_accepts_status_response_without_message(monkeypatch):
+    monkeypatch.setattr(
+        requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse(
+            {
+                "status": "success",
+                "student_id": "B21DCCN629",
+                "server_url": "http://192.168.1.15:5000",
+            }
+        ),
+    )
+    client = CompetitionClient("http://192.168.50.218:8000/api/v1")
+
+    response = client.register("B21DCCN629", "http://192.168.1.15:5000")
+
+    assert response.message == "success"
+    assert response.status == "success"
+
+
+def test_register_accepts_message_only_response(monkeypatch):
+    monkeypatch.setattr(
+        requests,
+        "post",
+        lambda *args, **kwargs: FakeResponse({"message": "Dang ky thanh cong!"}),
+    )
+    client = CompetitionClient("http://192.168.50.218:8000/api/v1")
+
+    response = client.register("B21DCCN629", "http://192.168.1.15:5000")
+
+    assert response.message == "Dang ky thanh cong!"
+    assert response.student_id == "B21DCCN629"
+    assert response.server_url == "http://192.168.1.15:5000"
+
+
 @pytest.mark.parametrize(
     ("student_id", "server_url", "message"),
     [
@@ -88,7 +123,7 @@ def test_register_maps_request_errors(monkeypatch, failure):
 
 
 def test_register_rejects_invalid_response_schema(monkeypatch):
-    monkeypatch.setattr(requests, "post", lambda *args, **kwargs: FakeResponse({"message": "ok"}))
+    monkeypatch.setattr(requests, "post", lambda *args, **kwargs: FakeResponse(["not", "an", "object"]))
     client = CompetitionClient("http://192.168.50.218:8000/api/v1")
 
     with pytest.raises(CompetitionRegistrationError, match="invalid response"):

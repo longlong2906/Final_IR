@@ -34,7 +34,11 @@ class CompetitionClient:
                 timeout=self.timeout,
             )
             response.raise_for_status()
-            registration = RegisterResponse.model_validate(response.json())
+            registration = self._parse_register_response(
+                response.json(),
+                student_id,
+                student_server_url,
+            )
         except ValidationError as exc:
             raise CompetitionRegistrationError("Teacher Proxy returned an invalid response.") from exc
         except (requests.RequestException, TypeError, ValueError) as exc:
@@ -42,6 +46,20 @@ class CompetitionClient:
         if registration.student_id != student_id or registration.server_url != student_server_url:
             raise CompetitionRegistrationError("Teacher Proxy response does not match the request.")
         return registration
+
+    @staticmethod
+    def _parse_register_response(
+        payload,
+        student_id: str,
+        student_server_url: str,
+    ) -> RegisterResponse:
+        if not isinstance(payload, dict):
+            raise CompetitionRegistrationError("Teacher Proxy returned an invalid response.")
+        normalized = dict(payload)
+        normalized.setdefault("student_id", student_id)
+        normalized.setdefault("server_url", student_server_url)
+        normalized.setdefault("message", normalized.get("status", "Dang ky thanh cong!"))
+        return RegisterResponse.model_validate(normalized)
 
     def evaluate(self, student_id: str) -> EvaluateResponse:
         evaluation = self._post_action(

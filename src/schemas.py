@@ -45,6 +45,7 @@ class RegisterResponse(BaseModel):
     message: str
     student_id: str
     server_url: str
+    status: str | None = None
 
 
 class EvaluateResponse(BaseModel):
