@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 from pathlib import Path
@@ -26,7 +27,7 @@ def main() -> int:
     except CompetitionRegistrationError as exc:
         print(str(exc), file=sys.stderr)
         return 1
-    print(response.message)
+    print(json.dumps(response.model_dump(), ensure_ascii=False, indent=2))
     return 0
 
 

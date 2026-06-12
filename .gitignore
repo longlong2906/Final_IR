@@ -1,8 +1,10 @@
 .venv/
 .env
 models/
+data/
 __pycache__/
 .pytest_cache/
 .pytest-tmp/
 .pytest-tmp-full/
+.pytest-tmp-run/
 *.pyc

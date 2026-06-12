@@ -54,3 +54,20 @@ def test_search_rejects_empty_index():
         assert str(exc) == "No documents have been uploaded."
     else:
         raise AssertionError("search should reject an empty index")
+
+
+def test_persists_uploaded_vectors_and_metadata(tmp_path):
+    storage_path = tmp_path / "vector_store"
+    service = RAGService(FakeEmbedder(), storage_path=storage_path)
+
+    service.upload("doc-alpha", "alpha")
+    service.upload("doc-beta", "beta")
+
+    restored = RAGService(FakeEmbedder(), storage_path=storage_path)
+    chunks, sources = restored.search("alpha question", top_k=2)
+
+    assert chunks[0] == "alpha"
+    assert sources == ["doc-alpha", "doc-beta"]
+    assert restored.document_count == 2
+    assert (storage_path / "index.faiss").is_file()
+    assert (storage_path / "metadata.json").is_file()

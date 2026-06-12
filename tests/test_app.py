@@ -1,5 +1,6 @@
 from fastapi.testclient import TestClient
 
+import app as app_module
 from app import create_app
 from llm_proxy_client import LLMProxyError, LLMProxyNotConfiguredError
 
@@ -32,6 +33,25 @@ def test_upload_returns_doc_id_and_chunk_count():
     assert response.status_code == 200
     assert response.json() == {"status": "success", "doc_id": "generated-id", "chunks": 2}
     assert rag.uploads == [(None, "document")]
+
+
+def test_lifespan_loads_persistent_vector_store(monkeypatch):
+    captured = {}
+
+    def fake_from_local_model(model_path, storage_path=None):
+        captured["model_path"] = model_path
+        captured["storage_path"] = storage_path
+        return FakeRAG()
+
+    monkeypatch.setattr(app_module.RAGService, "from_local_model", fake_from_local_model)
+
+    with TestClient(create_app(rag_service=None, llm_client=FakeLLM())):
+        pass
+
+    assert captured == {
+        "model_path": app_module.MODEL_PATH,
+        "storage_path": app_module.VECTOR_STORE_PATH,
+    }
 
 
 def test_ask_returns_answer_and_sources():

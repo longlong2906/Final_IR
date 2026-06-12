@@ -43,10 +43,8 @@ def test_main_loads_dotenv_and_prints_evaluation(monkeypatch, tmp_path, capsys):
                 (),
                 {
                     "model_dump": lambda self: {
-                        "student_id": "B21DCCN629",
-                        "score": 8.0,
-                        "status": "completed",
-                        "detail": [],
+                        "message": "B21DCCN629",
+                        "final_score": 8.0,
                     }
                 },
             )()
@@ -55,10 +53,8 @@ def test_main_loads_dotenv_and_prints_evaluation(monkeypatch, tmp_path, capsys):
 
     assert script.main() == 0
     assert json.loads(capsys.readouterr().out) == {
-        "student_id": "B21DCCN629",
-        "score": 8.0,
-        "status": "completed",
-        "detail": [],
+        "message": "B21DCCN629",
+        "final_score": 8.0,
     }
 
 

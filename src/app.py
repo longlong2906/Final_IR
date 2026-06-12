@@ -9,13 +9,17 @@ from schemas import AskRequest, AskResponse, UploadRequest, UploadResponse
 
 
 MODEL_PATH = Path(__file__).resolve().parents[1] / "models" / "vietnamese-sbert"
+VECTOR_STORE_PATH = Path(__file__).resolve().parents[1] / "data" / "vector_store"
 
 
 def create_app(rag_service=None, llm_client=None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(app: FastAPI):
         if app.state.rag_service is None:
-            app.state.rag_service = RAGService.from_local_model(MODEL_PATH)
+            app.state.rag_service = RAGService.from_local_model(
+                MODEL_PATH,
+                storage_path=VECTOR_STORE_PATH,
+            )
         yield
 
     app = FastAPI(title="Vietnamese RAG API", lifespan=lifespan)

@@ -1,4 +1,5 @@
 import importlib.util
+import json
 from pathlib import Path
 
 
@@ -35,12 +36,26 @@ def test_main_loads_dotenv_and_prints_success(monkeypatch, tmp_path, capsys):
 
         def reset(self, student_id):
             assert student_id == "B21DCCN629"
-            return type("Response", (), {"message": "Da reset trang thai."})()
+            return type(
+                "Response",
+                (),
+                {
+                    "model_dump": lambda self: {
+                        "status": "success",
+                        "message": "Da reset trang thai.",
+                        "score": 5.0,
+                    }
+                },
+            )()
 
     monkeypatch.setattr(script, "CompetitionClient", FakeClient)
 
     assert script.main() == 0
-    assert capsys.readouterr().out.strip() == "Da reset trang thai."
+    assert json.loads(capsys.readouterr().out) == {
+        "status": "success",
+        "message": "Da reset trang thai.",
+        "score": 5.0,
+    }
 
 
 def test_main_returns_nonzero_when_configuration_is_missing(monkeypatch, tmp_path, capsys):
